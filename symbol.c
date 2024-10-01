@@ -24,10 +24,10 @@ int lookup(char s[]) {
     int rc = -1;
 
     for (p = 0; p < lastentry; p++) {
-	if (strcmp(symtable[p].lexptr, s) == 0) {
-	    rc = p;
-	    break;
-	}
+        if (strcmp(symtable[p].lexptr, s) == 0) {
+            rc = p;
+            break;
+        }
     }
     return(rc);
 }

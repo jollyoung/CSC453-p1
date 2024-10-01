@@ -24,6 +24,7 @@ main(int argc, char* argv[])
 		printf("%c,%d> ", (char)t, -1);
 	    } else {
 		switch(t) {
+            
 		    case DONE:
 			printf("DONE");
 			printf(",%d> ", symtable[tokenval].var_index);
@@ -31,7 +32,7 @@ main(int argc, char* argv[])
 		    
             case ID:
             printf("ID");
-            printf(",%d> ", tokenval);
+            printf(",%d> ", symtable[tokenval].var_index);
             break;
 		   
 		    case INT8:

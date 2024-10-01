@@ -50,12 +50,13 @@ int lexan() {
 	    if (t != EOF) {
 		ungetc(t, stdin);
 	    }
-
+		
 	    p = lookup(lexbuf);
 
 	    if (p == -1) {
 		//printf("** calling insert\n");
-		p = insert(lexbuf, ID, 0);
+		p = insert(lexbuf, ID, varIndex);
+		varIndex++;
 	    }
 
 	    tokenval = p;
