@@ -499,7 +499,6 @@ factor() {
 
 int
 main() {
-	printf("HI\n");
 	fflush(stdout);
     init();
 
@@ -508,7 +507,6 @@ main() {
     tk = lexan();
 
     if (!(tk == DONE || tk == EOF)) {
-		printf("HI\n");
 	stmt();
     }
 

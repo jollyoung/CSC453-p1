@@ -50,7 +50,6 @@ int lexan() {
 	    if (t != EOF) {
 		ungetc(t, stdin);
 	    }
-		
 	    p = lookup(lexbuf);
 
 	    if (p == -1) {
@@ -62,6 +61,20 @@ int lexan() {
 	    tokenval = p;
 
 	    rc = symtable[p].token;
+		// if (strcmp(lexbuf, "arg") == 0) {
+		// 	printf("ARG\n");
+		// 	tokenval = lookup(lexbuf);
+		// 	printf("tokenval: %d\n", tokenval);
+		// 	rc = ARG;  // ARG 토큰을 직접 반환
+		// } else {
+		// 	p = lookup(lexbuf);
+		// 	if (p == -1) {
+		// 		p = insert(lexbuf, ID, varIndex);
+		// 		varIndex++;
+		// 	}
+		// 	tokenval = p;
+		// 	rc = symtable[p].token;  // 일반적인 경우의 토큰 반환
+		// }
 
 	    break;
 	} else if (t == EOF) {
