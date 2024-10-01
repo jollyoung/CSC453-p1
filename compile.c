@@ -146,68 +146,100 @@ stmt() {
     switch (tk) {
 	case LEFT_CURLY:
 	    match(LEFT_CURLY);
-	    opt_stmts();
+
+		// Optionally get a sequence of statements 
+	    opt_stmts(); 
+
+		// Check for closing curly brace
 	    if (!match(RIGHT_CURLY)) {
 		error("Expected closing curly brace");
 	    }
+
 	    break;
 	
 	case ID:
+		printf("ID\n");
+		printf("VarIndex: %d\n", symtable[tokenval].var_index);
 	    var_index = symtable[tokenval].var_index;
+
+		// If the variable is a keyword, print an error
 	    if (var_index < 0) {
 		error("Attempting to use keyword as variable");
-	    } else if (var_index == 0) {
+	    } 
+		
+		// If it's a new variable, assign it a new index
+		else if (var_index == 0) {
 		var_index = assign_var_index(tokenval); // initializeing variable
 	    }
 	    // else case already taken care of, just overwrite existing variable
 	    
+		// Check the ID of the variable
 	    match(ID);
+		// If it is not '=' then print an error
 	    if (!match(EQ)) {
 		error("Expected assignment operator");
 	    }
+
+		// Get the expression on the right side of the assignment
 	    expr();
 
 	    if (stackDepth >= 1) {
-		emit2(istore, var_index);
-		stackDepth--;
+			// Store the value in the variable
+			emit2(istore, var_index);
+			stackDepth--;
 	    } else {
-		error("No rvalue for assignment operator");
+			error("No rvalue for assignment operator");
 	    }
 	    if (!match(';')) {
-		error("Expected ';'");
+			error("Expected ';'");
 	    }
 	    break;
 	
 	case IF:
 	    match(IF);
 	    if (!match('(')) {
-		error("Mising parenthesis");
+			error("Mising parenthesis");
 	    }
 	    expr();
 	    if (!match(')')) {
-		error("Mising parenthesis");
+			error("Mising parenthesis");
 	    }
 
 	    emit(iconst_0);
 	    if_loc = pc;
+
+		// If the condition is false, jump to the else block
 	    emit3(if_icmpeq, 0);
 
 	    stmt();
 
-	    // to be completed
+	    if (!match(ELSE)) {
+			// If there is no else block, backpatch the jump to the end of the if block
+			backpatch(if_loc, pc - if_loc); 
+		} else {
+			else_loc = pc;
 
-	    stmt();
+			// If the if block is true, jump to the end of the else block
+			emit3(goto_, 0);
 
-	    // to be completed
+			// If the condition is false, jump to the else block
+			backpatch(if_loc, pc - if_loc); 
+
+			stmt(); 
+
+			// Backpatch the jump to the end of the else block
+			backpatch(else_loc, pc - else_loc);  
+		}
 
 	    break;
 	
 	case WHILE:
 	    match(WHILE);
 	    if (!match('(')) {
-		error("Mising parenthesis");
+			error("Mising parenthesis");
 	    }
 
+		// Save the start location of the while loop
 	    int test_loc = pc;
 
 	    expr();
@@ -218,11 +250,14 @@ stmt() {
 
 	    emit(iconst_0);
 	    loc = pc;
+		// If the condition is false, jump to the end of the while loop
 	    emit3(if_icmpeq, 0);
 
 	    stmt();
 
+		// Go back to the start of the while loop
 	    emit3(goto_, test_loc-pc);
+		// Backpatch the jump to the end of the while loop
 	    backpatch(loc, pc-loc);
 	    break;
 	
@@ -230,17 +265,34 @@ stmt() {
 	    match(RET);
 	    expr();
 	    if (stackDepth >= 1) {
-		emit(istore_2);
-		retLoc[numRets] = pc;
-		emit3(goto_, retLoc[numRets]);
-		numRets++;
+			emit(istore_2);
+			retLoc[numRets] = pc;
+			emit3(goto_, retLoc[numRets]);
+			numRets++;
 	    } else {
-		error("No value to return, stack empty");
+			error("No value to return, stack empty");
 	    }
 
-	    // to be completed
+	case ARG:
+		match(ARG);
+		if (!match(ID)) {
+			error("Expected identifier");
+		} else {
+			// Get the variable index of the argument
+			var_index = symtable[tokenval].var_index;
 
-	    break;
+			// If the variable is a keyword, print an error
+			// If it's a new variable, assign it a new index
+			if (var_index < 0) {
+				error("Attempting to use keyword as variable");
+			} else if (var_index == 0) {
+				var_index = assign_var_index(tokenval);  
+			}
+
+			// Load the value of the argument
+			emit2(iload, var_index);  
+		}
+		break;
 	
 	default:
 	    error("Unexpected token, expected statement");
@@ -252,22 +304,58 @@ stmt() {
 
 void
 opt_stmts() {
-    // to be completed
+    while (tk != RIGHT_CURLY && tk != DONE) {
+        stmt();  
+    }
+	if (!match(LEFT_CURLY)) {
+		error("Expected closing curly brace");
+	}
 }
 
 //*******************************************************************************
 
 void
 expr() {
-    // to be completed
+	// Get the first term
+    term();  
+
+    while (tk == PLUS || tk == MINUS) {  
+        if (tk == PLUS) {
+            match(PLUS);  
+            term();  
+            emit(iadd);  
+        } else if (tk == MINUS) {
+            match(MINUS);  
+            term();  
+            emit(isub);  
+        }
+    }
+
 }
 
 //*******************************************************************************
 
 void
 term() {
-    // to be completed
+    factor();  
+
+    while (tk == MUL || tk == DIV || tk == MOD) {  
+        if (tk == MUL) {
+            match(MUL);  
+            factor();  
+            emit(imul);  
+        } else if (tk == DIV) {
+            match(DIV);  
+            factor();  
+            emit(idiv);  
+        } else if (tk == MOD) {
+            match(MOD);  
+            factor();  
+            emit(irem);  
+    	}
+	}
 }
+
 
 //*******************************************************************************
 
@@ -371,8 +459,10 @@ factor() {
 	    } else if (var_index == 0) {
 		error("Variable does not exist");
 	    } else {
-		// to be completed
-	    }
+			// Load the variable's value onto the stack
+			emit2(iload, var_index);
+			stackDepth++;
+		}
 
 	    match(ID);
 	    break;
@@ -380,9 +470,24 @@ factor() {
 	case ARG:
 	    match(ARG);
 
-	    // to be completed
+	    // Assuming ARG is an array argument, we need to load the value of ARG[i] for example
+		if (!match('[')) {
+			error("Expected '[' after ARG");
+		}
+		
+		// Evaluate the expression inside the brackets (for example ARG[0])
+		expr();  // Assuming expr() gives the index
 
-	    break;
+		if (!match(']')) {
+			error("Expected ']' after expression");
+		}
+
+		// Load ARG[index] onto the stack
+		emit2(aload, 0);  // aload 0 loads the array ARG (assumed to be in local variable 0)
+		emit(iaload);     // iaload loads the value at the computed index
+
+		stackDepth++;
+		break;
 
 	default:
 	    error("Expected a factor");
@@ -394,6 +499,8 @@ factor() {
 
 int
 main() {
+	printf("HI\n");
+	fflush(stdout);
     init();
 
     java_preamble();
@@ -401,6 +508,7 @@ main() {
     tk = lexan();
 
     if (!(tk == DONE || tk == EOF)) {
+		printf("HI\n");
 	stmt();
     }
 

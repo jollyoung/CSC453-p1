@@ -10,7 +10,10 @@
 struct entry keywords[] =
 {
     {"if", IF, -1},
-    // TO BE COMPLETED
+    {"else", ELSE, -1},
+    {"while", WHILE, -1},
+    {"return", RET, -1},
+    {"arg", ARG, -1},
     {0, 0, 0}
 };
 
@@ -18,6 +21,6 @@ void init() {
     struct entry *p;
 
     for (p = keywords; p->token; p++) {
-	insert(p->lexptr, p->token, p->var_index);
+	    insert(p->lexptr, p->token, p->var_index);
     }
 }

@@ -61,7 +61,6 @@ int insert(char s[], int tok, int javaIndex) {
 
     lastentry++;
 
-
     return(lastentry-1);
 }
 

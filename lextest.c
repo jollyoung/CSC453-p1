@@ -28,13 +28,26 @@ main(int argc, char* argv[])
 			printf("DONE");
 			printf(",%d> ", symtable[tokenval].var_index);
 			break;
-		    // to be completed
+		    
+            case ID:
+            printf("ID");
+            printf(",%d> ", tokenval);
+            break;
 		   
 		    case INT8:
 			printf("INT8");
 			printf(",%d> ", tokenval);
 			break;
-		    // to be completed
+		    
+            case INT16:
+            printf("INT16");
+            printf(",%d> ", tokenval);
+            break;
+
+            case INT32:
+            printf("INT32");
+            printf(",%d> ", tokenval);
+            break;
 		}
 	    }
 	}
